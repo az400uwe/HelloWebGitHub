@@ -1,4 +1,4 @@
-name: Build HelloWeb
+name: Build and Deploy HelloWeb
 
 on:
   push:
@@ -26,9 +26,11 @@ jobs:
       run: dotnet test --no-build --verbosity normal
     - name: Publish
       run: dotnet publish HelloWebGitHub/HelloWebGitHub.csproj -c Release -o website
-    - name: Upload a Build Artifact
-      uses: actions/upload-artifact@v3
-      with:
-        name: website
-        path: /home/runner/work/HelloWebGitHub/HelloWebGitHub/website/**
-        if-no-files-found: error
+
+      # Deploy to Azure Web apps
+    - name: 'Run Azure webapp deploy action using publish profile credentials'
+      uses: azure/webapps-deploy@v2
+      with: 
+       app-name: hellowebgithub # Replace with your app name
+      publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE  }} # Define secret variable in repository settings as per action documentation
+      package: '${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/myapp'
