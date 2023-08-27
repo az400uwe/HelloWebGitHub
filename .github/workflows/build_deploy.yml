@@ -6,30 +6,27 @@ on:
   pull_request:
     branches: [ main ]
   workflow_dispatch:
-  
 jobs:
-  build:
-
-    runs-on: ubuntu-latest
+  build_and_deploy:
+    runs-on: windows-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v2
     - name: Setup .NET
-      uses: actions/setup-dotnet@v3
+      uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 6.0.x
     - name: Restore dependencies
       run: dotnet restore
     - name: Build
-      run: dotnet build --no-restore
+      run: dotnet build --configuration Release --no-restore 
     - name: Test
       run: dotnet test --no-build --verbosity normal
     - name: Publish
-      run: dotnet publish HelloWebGitHub/HelloWebGitHub.csproj -c Release -o website
-      # Deploy to Azure Web apps
-    - name: 'Run Azure webapp deploy action using publish profile credentials'
+      run: dotnet publish --configuration release --output aspnet-webapp
+    - name: 'Deploy to Azure WebApp'
       uses: azure/webapps-deploy@v2
-      with: 
-        app-name: hellowebgithub
-        publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE  }}
-        package: ./website
+      with:
+        app-name: 'hellowebgithub'
+        publish-profile: ${{ secrets.WEBAPP_PUBLISH_PROFILE }}
+        package: './aspnet-webapp'
